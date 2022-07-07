@@ -5,6 +5,8 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContract
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -17,7 +19,7 @@ import com.anniljing.roomwordsample.viewModel.WordViewModelFactory
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MainActivity : AppCompatActivity() {
-    private val newWordActivityRequestCode=1;
+    private val newWordActivityRequestCode=1
     private val wordViewModel:WordViewModel by viewModels {
         WordViewModelFactory((application as WordsApplication).repository)
     }
@@ -35,26 +37,23 @@ class MainActivity : AppCompatActivity() {
             words.let { adapter.submitList(it) }
         }
         val fab = findViewById<FloatingActionButton>(R.id.fab)
+        val startActivityForResult=registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
+            if (it.resultCode == Activity.RESULT_OK) {
+                it.data?.getStringExtra(NewWordActivity.EXTRA_REPLY)?.let { reply ->
+                    val word = Word(reply)
+                    wordViewModel.insert(word)
+                }
+            } else {
+                Toast.makeText(
+                    applicationContext,
+                    R.string.empty_not_saved,
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
         fab.setOnClickListener {
             val intent = Intent(this@MainActivity, NewWordActivity::class.java)
-            startActivityForResult(intent, newWordActivityRequestCode)
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, intentData: Intent?) {
-        super.onActivityResult(requestCode, resultCode, intentData)
-
-        if (requestCode == newWordActivityRequestCode && resultCode == Activity.RESULT_OK) {
-            intentData?.getStringExtra(NewWordActivity.EXTRA_REPLY)?.let { reply ->
-                val word = Word(reply)
-                wordViewModel.insert(word)
-            }
-        } else {
-            Toast.makeText(
-                applicationContext,
-                R.string.empty_not_saved,
-                Toast.LENGTH_LONG
-            ).show()
+            startActivityForResult.launch(intent)
         }
     }
 }
