@@ -2,7 +2,7 @@
 结合官网demo，学习room、viewModel、liveData
 ###  Room数据库
 
-#### 数据库注解源码
+#### 数据库（Database）注解源码
 ```
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.CLASS)
@@ -61,3 +61,5 @@ public @interface Database {
     AutoMigration[] autoMigrations() default {};
 }
 ```
+#### 数据库（Database）注解详解
+**Class<?>[] entities()**
